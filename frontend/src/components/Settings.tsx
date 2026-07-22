@@ -31,7 +31,7 @@ export default function SettingsPanel({ settings, onChange, onClose }: Props) {
           <span>Name</span>
           <input
             type="text"
-            placeholder="What should the DJ call you?"
+            placeholder="What should the host call you?"
             value={settings.name}
             onChange={(e) => onChange({ ...settings, name: e.target.value })}
           />

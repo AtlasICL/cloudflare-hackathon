@@ -30,7 +30,7 @@ export default function AskBar({ onAsk }: { onAsk: (q: string) => void }) {
         type="button"
         className={styles.toggle}
         onClick={() => (open ? submit(new Event('submit') as unknown as React.FormEvent) : expand())}
-        aria-label="Ask the DJ"
+        aria-label="Ask the host"
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path
@@ -50,8 +50,8 @@ export default function AskBar({ onAsk }: { onAsk: (q: string) => void }) {
         onChange={(e) => setValue(e.target.value)}
         onBlur={() => !value && setOpen(false)}
         onKeyDown={(e) => e.key === 'Escape' && (setOpen(false), setValue(''))}
-        placeholder="Ask the DJ anything…"
-        aria-label="Ask the DJ a question"
+        placeholder="Ask the host anything…"
+        aria-label="Ask the host a question"
       />
 
       {open && value.trim() && (
@@ -62,7 +62,7 @@ export default function AskBar({ onAsk }: { onAsk: (q: string) => void }) {
         </button>
       )}
 
-      {!open && <span className={styles.label}>Ask the DJ</span>}
+      {!open && <span className={styles.label}>Ask the host</span>}
     </form>
   )
 }

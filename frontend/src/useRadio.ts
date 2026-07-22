@@ -95,7 +95,7 @@ export function useRadio(settings: Settings) {
     const request = fetch('/api/generate-segment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // listener profile lets the Worker personalize the DJ script;
+      // listener profile lets the Worker personalize the host script;
       // the backend currently ignores unknown fields, so this is non-breaking
       body: JSON.stringify({
         type,
@@ -181,13 +181,13 @@ export function useRadio(settings: Settings) {
       title: '1111.fm Morning Show',
       sub: 'Warming up the microphone',
       metaTitle: '1111.fm Live',
-      metaSub: 'AI DJ · introducing your first song',
+      metaSub: 'AI host · introducing your first song',
     })
     try {
       const segment = await getSegment('intro')
       if (requestId !== generation.current || !playingRef.current) return
       setToast({ title: segment.title, body: segment.script })
-      setDisplay((current) => ({ ...current, title: segment.title, sub: 'AI DJ · on air' }))
+      setDisplay((current) => ({ ...current, title: segment.title, sub: 'AI host · on air' }))
       await playVoice(segment, finishIntro, 'intro')
     } catch {
       releaseVoice()
@@ -201,7 +201,7 @@ export function useRadio(settings: Settings) {
     if (!playingRef.current || phase.current !== 'music' || updateIndex.current >= 2) return
     const requestId = ++generation.current
     const type: SegmentType = updateIndex.current === 0 ? 'commute' : 'interview'
-    setDisplay((current) => ({ ...current, metaSub: 'AI DJ · preparing live update' }))
+    setDisplay((current) => ({ ...current, metaSub: 'AI host · preparing live update' }))
     try {
       const segment = await getSegment(type)
       if (requestId !== generation.current || !playingRef.current || phase.current !== 'music') return
@@ -210,11 +210,11 @@ export function useRadio(settings: Settings) {
       music.pause()
       setToast({ title: segment.title, body: segment.script })
       setDisplay({
-        kicker: 'AI DJ interruption',
+        kicker: 'AI host interruption',
         title: segment.title,
         sub: 'Personal update · just for you',
         metaTitle: '1111.fm Live',
-        metaSub: 'AI DJ · speaking now',
+        metaSub: 'AI host · speaking now',
       })
       await playVoice(segment, finishUpdate, 'voice')
     } catch {
@@ -278,14 +278,14 @@ export function useRadio(settings: Settings) {
     void resumeMusic(true)
   }
 
-  // Ask the DJ a free-form question → Worker gathers context (profile + AI Search),
-  // Workers AI answers in the DJ voice, ElevenLabs speaks it over ducked music.
+  // Ask the host a free-form question → Worker gathers context (profile + AI Search),
+  // Workers AI answers in the host voice, ElevenLabs speaks it over ducked music.
   async function ask(question: string) {
     const q = question.trim()
     if (!q) return
     const requestId = ++generation.current
     const s = settingsRef.current
-    setDisplay((current) => ({ ...current, metaSub: 'AI DJ · thinking about your question' }))
+    setDisplay((current) => ({ ...current, metaSub: 'AI host · thinking about your question' }))
     try {
       const response = await fetch('/api/ask', {
         method: 'POST',
@@ -304,7 +304,7 @@ export function useRadio(settings: Settings) {
       if (!response.ok) throw new Error('ask failed')
       if (requestId !== generation.current) return
 
-      const title = decodeURIComponent(response.headers.get('X-DJ-Title') || 'You asked the DJ')
+      const title = decodeURIComponent(response.headers.get('X-DJ-Title') || 'You asked the host')
       const contentType = response.headers.get('content-type') || ''
 
       if (contentType.includes('audio')) {
@@ -317,11 +317,11 @@ export function useRadio(settings: Settings) {
         }
         setToast({ title, body: script })
         setDisplay({
-          kicker: 'You asked the DJ',
+          kicker: 'You asked the host',
           title,
           sub: 'Answering you now',
           metaTitle: '1111.fm Live',
-          metaSub: 'AI DJ · answering you',
+          metaSub: 'AI host · answering you',
         })
         await playVoice({ script, title, audio }, finishAnswer, 'voice')
       } else {
@@ -330,25 +330,15 @@ export function useRadio(settings: Settings) {
         setToast({ title: data.title || title, body: data.script || '' })
       }
     } catch {
-      setToast({ title: 'DJ hiccup', body: "I couldn't reach the studio for that one — try again in a sec." })
+      setToast({ title: 'Host hiccup', body: "I couldn't reach the studio for that one — try again in a sec." })
     }
   }
 
   useEffect(() => {
     music.preload = 'auto'
     voice.preload = 'auto'
+    music.loop = true // only one track for now — loop it forever (no playlist yet)
     void getSegment('intro')
-    music.onended = () => {
-      clearTimer()
-      phase.current = 'ended'
-      setPlayback(false)
-      setDisplay((current) => ({
-        ...current,
-        kicker: 'Mix complete',
-        sub: 'Press play to hear your personal station again',
-        metaSub: '1111.fm · ready to replay',
-      }))
-    }
     return () => {
       clearTimer()
       cancelFade()

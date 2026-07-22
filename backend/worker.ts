@@ -93,7 +93,7 @@ const SEGMENT_BRIEF: Record<SegmentType, string> = {
     "Share a fun, personal piece of good news as if it just landed in the listener's inbox. Celebratory but brief.",
 };
 
-const DJ_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+const HOST_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const FREE_PLAN_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb";
 
 const CACHED_AUDIO: Record<SegmentType, ArrayBuffer> = {
@@ -135,7 +135,7 @@ function searchQuery(type: SegmentType, listener: Listener): string {
 }
 
 /**
- * AI Search (formerly AutoRAG) retrieval — grounds the DJ in real content.
+ * AI Search (formerly AutoRAG) retrieval — grounds the host in real content.
  * Gated by AI_SEARCH_INSTANCE; returns "" (no grounding) when unset or on error.
  */
 async function retrieveContext(env: Env, query: string): Promise<string> {
@@ -163,8 +163,8 @@ async function retrieveContext(env: Env, query: string): Promise<string> {
   }
 }
 
-/** Runs the DJ persona LLM (via AI Gateway if configured). */
-async function runDj(
+/** Runs the host persona LLM (via AI Gateway if configured). */
+async function runHost(
   env: Env,
   system: string,
   user: string,
@@ -172,7 +172,7 @@ async function runDj(
   if (!env.AI) return null;
   try {
     const out = await env.AI.run(
-      DJ_MODEL,
+      HOST_MODEL,
       {
         messages: [
           { role: "system", content: system },
@@ -191,10 +191,10 @@ async function runDj(
   }
 }
 
-const DJ_SYSTEM =
-  "You are the live AI DJ for 1111.fm, a personal radio station. Write exactly what the DJ says OUT LOUD: warm, energetic, conversational. Two to three sentences, under 55 words. No emojis, no markdown, no stage directions, no surrounding quotation marks.";
+const HOST_SYSTEM =
+  "You are the live AI host for 1111.fm, a personal radio station. Write exactly what the host says OUT LOUD: warm, energetic, conversational. Two to three sentences, under 55 words. No emojis, no markdown, no stage directions, no surrounding quotation marks.";
 
-/** Workers AI writes the DJ line from the listener profile, grounded by AI Search. */
+/** Workers AI writes the host line from the listener profile, grounded by AI Search. */
 async function generateScript(
   env: Env,
   type: SegmentType,
@@ -213,10 +213,10 @@ async function generateScript(
       ? `\n\nGrounding facts (use only what is relevant, do not invent beyond these):\n${context}`
       : "");
 
-  return runDj(env, DJ_SYSTEM, user);
+  return runHost(env, HOST_SYSTEM, user);
 }
 
-/** Answers a listener's free-form question in the DJ's voice, grounded by AI Search. */
+/** Answers a listener's free-form question in the host's voice, grounded by AI Search. */
 async function answerQuestion(
   env: Env,
   question: string,
@@ -228,12 +228,12 @@ async function answerQuestion(
 
   const context = await retrieveContext(env, question);
   const system =
-    "You are the live AI DJ for 1111.fm. A listener just asked you something on air. Answer warmly and concisely in a spoken style: two to four sentences, under 70 words. Use the grounding facts if relevant; if you don't know, say so briefly and keep it light. No emojis, no markdown, no surrounding quotation marks.";
+    "You are the live AI host for 1111.fm, a knowledgeable and entertaining radio host. A listener just asked you something on air. Answer their question directly and confidently in a warm, spoken style: two to four sentences, under 70 words. If grounding facts are provided, use them. If you don't have live real-time data, still give a genuinely useful answer from what you know — relevant context, background, or a fun fact. NEVER tell the listener to check another app, website, or service, and never brush them off with 'stay tuned' or 'I'll check later'. No emojis, no markdown, no surrounding quotation marks.";
   const user =
     `Listener ${name} in ${location} (follows ${topics}) asks on air: "${question}"` +
     (context ? `\n\nGrounding facts:\n${context}` : "");
 
-  return runDj(env, system, user);
+  return runHost(env, system, user);
 }
 
 /** Best-effort append to the D1 play log. */
@@ -424,8 +424,8 @@ async function askDj(request: Request, env: Env): Promise<Response> {
 
   const script =
     (await answerQuestion(env, question, listener)) ??
-    "Great question! I don't have that one cued up right now, but stay tuned and I'll dig into it between tracks.";
-  const title = "You asked the DJ";
+    "Great question! Here's the short version — you're on 1111.fm, your own station, and I'm here to talk through whatever's on your mind between the tracks.";
+  const title = "You asked the host";
 
   await logSegment(env, listener, "ask", title, script);
 
