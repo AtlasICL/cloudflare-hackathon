@@ -1,0 +1,79 @@
+frontend/tsconfig.app.json
+  s_122f36bba0b054::t_cb01c51b6d2641 1-21
+frontend/src/vite-env.d.ts
+  s_122f36bba0b054::t_d9a787fc33dbb9 1
+frontend/index.html
+  s_122f36bba0b054::t_a6ca49acf669e8 1,3-12
+frontend/src/components/WaveVisualizer.module.css
+  s_122f36bba0b054::t_307856aef27a99 1-8
+frontend/public/favicon.svg
+  s_122f36bba0b054::t_532bfd722665a1 1-17
+frontend/src/components/Player.tsx
+  s_122f36bba0b054::t_172b4bb5376e7a 1-36
+frontend/src/App.module.css
+  s_122f36bba0b054::t_61e82afea6c85c 1-29
+frontend/src/components/TopBar.module.css
+  s_122f36bba0b054::t_830eaa3c25ed66 1-106
+frontend/tsconfig.node.json
+  s_122f36bba0b054::t_bbd9dac12764d5 1-15
+frontend/src/settings.ts
+  s_122f36bba0b054::t_0c6884eae8f3f3 1-35
+.gitignore
+  s_122f36bba0b054::t_79c865605ffea5 1-9
+package.json
+  s_122f36bba0b054::t_c603b97e6bcb3c 1-11
+frontend/src/components/NowPlaying.tsx
+  s_122f36bba0b054::t_cc5ada92464cdb 1-16
+frontend/src/App.tsx
+  s_122f36bba0b054::t_f55ade4fb2de48 1-36
+frontend/src/useSettings.ts
+  s_122f36bba0b054::t_7d0a4c2ec8dba2 1-25
+frontend/src/main.tsx
+  s_122f36bba0b054::t_ded8507aa9dcce 1-10
+frontend/package.json
+  s_122f36bba0b054::t_af47dc2d7abbaa 1-22
+frontend/src/components/NowPlaying.module.css
+  s_122f36bba0b054::t_ae1ae4690a45b9 1-29
+frontend/vite.config.ts
+  s_122f36bba0b054::t_47c842ec20b0df 1-8
+frontend/src/components/WaveVisualizer.tsx
+  s_122f36bba0b054::t_4accd1c0d9146d 1-130
+frontend/src/index.css
+  s_122f36bba0b054::t_645991584e8f2d 1-22
+frontend/src/components/TopBar.tsx
+  s_122f36bba0b054::t_0f08021d95d5eb 1-27
+frontend/.gitignore
+  s_122f36bba0b054::t_7cc94a63e612e0 1-6
+frontend/tsconfig.json
+  s_122f36bba0b054::t_7b7d767e1a7879 1-7
+frontend/src/components/AgentToast.module.css
+  s_122f36bba0b054::t_e6da576c7e6801 1-57
+frontend/src/components/Settings.module.css
+  s_122f36bba0b054::t_ba75ea67776175 1-120
+frontend/src/components/AgentToast.tsx
+  s_122f36bba0b054::t_35ca802f4b5b5b 1-61
+package-lock.json
+  s_122f36bba0b054::t_33ecf2157295db 1-1550
+frontend/src/components/Player.module.css
+  s_122f36bba0b054::t_8b4246732ddddf 1-39
+frontend/src/components/Settings.tsx
+  s_122f36bba0b054::t_3b1d800b6a51a0 1-92
+frontend/package-lock.json
+  s_122f36bba0b054::t_467b7b06d49dd8 1-1862
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0858ef8f1c274de4c4f5d2777a27757638304514",
+  "prompts": {},
+  "sessions": {
+    "s_122f36bba0b054": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9a818079-1a6b-4f48-a790-f27953ddc240",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sina Dilek <fatih@cloudflare.com>"
+    }
+  }
+}
