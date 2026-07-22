@@ -4,6 +4,7 @@ import TopBar from './components/TopBar'
 import NowPlaying from './components/NowPlaying'
 import AgentToast from './components/AgentToast'
 import Player from './components/Player'
+import AskBar from './components/AskBar'
 import SettingsPanel from './components/Settings'
 import { useSettings } from './useSettings'
 import { useRadio } from './useRadio'
@@ -23,6 +24,7 @@ export default function App() {
       <TopBar onOpenSettings={() => setSettingsOpen(true)} />
       <NowPlaying display={radio.display} />
       <AgentToast update={radio.toast} />
+      <AskBar onAsk={(q) => void radio.ask(q)} />
       <Player
         display={radio.display}
         playing={radio.playing}

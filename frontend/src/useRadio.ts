@@ -273,6 +273,67 @@ export function useRadio(settings: Settings) {
     else voiceDone.current()
   }
 
+  function finishAnswer() {
+    releaseVoice()
+    void resumeMusic(true)
+  }
+
+  // Ask the DJ a free-form question → Worker gathers context (profile + AI Search),
+  // Workers AI answers in the DJ voice, ElevenLabs speaks it over ducked music.
+  async function ask(question: string) {
+    const q = question.trim()
+    if (!q) return
+    const requestId = ++generation.current
+    const s = settingsRef.current
+    setDisplay((current) => ({ ...current, metaSub: 'AI DJ · thinking about your question' }))
+    try {
+      const response = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: q,
+          listener: {
+            id: s.id,
+            name: s.name,
+            location: s.location,
+            topics: s.topics,
+            taste: s.taste,
+          },
+        }),
+      })
+      if (!response.ok) throw new Error('ask failed')
+      if (requestId !== generation.current) return
+
+      const title = decodeURIComponent(response.headers.get('X-DJ-Title') || 'You asked the DJ')
+      const contentType = response.headers.get('content-type') || ''
+
+      if (contentType.includes('audio')) {
+        const script = decodeURIComponent(response.headers.get('X-DJ-Script') || '')
+        const audio = await response.blob()
+        if (requestId !== generation.current) return
+        if (phase.current === 'music') {
+          await fadeMusic(0)
+          music.pause()
+        }
+        setToast({ title, body: script })
+        setDisplay({
+          kicker: 'You asked the DJ',
+          title,
+          sub: 'Answering you now',
+          metaTitle: '1111.fm Live',
+          metaSub: 'AI DJ · answering you',
+        })
+        await playVoice({ script, title, audio }, finishAnswer, 'voice')
+      } else {
+        // text-only answer (no voice configured)
+        const data = (await response.json()) as { title?: string; script?: string }
+        setToast({ title: data.title || title, body: data.script || '' })
+      }
+    } catch {
+      setToast({ title: 'DJ hiccup', body: "I couldn't reach the studio for that one — try again in a sec." })
+    }
+  }
+
   useEffect(() => {
     music.preload = 'auto'
     voice.preload = 'auto'
@@ -311,5 +372,5 @@ export function useRadio(settings: Settings) {
     }).catch(() => {})
   }, [settings])
 
-  return { display, next, playing, previous, toast, toggle }
+  return { ask, display, next, playing, previous, toast, toggle }
 }

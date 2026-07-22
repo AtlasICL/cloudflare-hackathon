@@ -7,22 +7,27 @@
     "ELEVENLABS_VOICE_ID": "fq1SdXsX6OokE10pJ4Xw",
     // Create a gateway in the dashboard (AI -> AI Gateway) and put its name here
     // to route Workers AI calls through it for caching + metrics. Empty = direct.
-    "AI_GATEWAY_ID": ""
+    "AI_GATEWAY_ID": "",
+    // Create an AI Search instance (AI -> AI Search), upload topic content, and
+    // put its name here to ground the DJ's lines in retrieved facts. Empty = off.
+    "AI_SEARCH_INSTANCE": ""
   },
   // Workers AI: no resource to create, the binding is enough.
   "ai": {
     "binding": "AI"
   },
-  // D1: run `npx wrangler d1 create cloudwave` and paste the returned id below,
-  // then `npx wrangler d1 migrations apply cloudwave --local` (and --remote to deploy).
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "cloudwave",
-      "database_id": "REPLACE_WITH_wrangler_d1_create_ID",
-      "migrations_dir": "migrations"
-    }
-  ],
+  // D1 — UNCOMMENT after provisioning (a placeholder id breaks `wrangler dev`):
+  //   1. npx wrangler d1 create cloudwave   -> paste the printed database_id below
+  //   2. npx wrangler d1 migrations apply cloudwave --local   (and --remote to deploy)
+  // The Worker guards `env.DB`, so profiles + play-log just stay off until then.
+  // "d1_databases": [
+  //   {
+  //     "binding": "DB",
+  //     "database_name": "cloudwave",
+  //     "database_id": "REPLACE_WITH_wrangler_d1_create_ID",
+  //     "migrations_dir": "migrations"
+  //   }
+  // ],
   "assets": {
     "directory": "./frontend/dist",
     "binding": "ASSETS",

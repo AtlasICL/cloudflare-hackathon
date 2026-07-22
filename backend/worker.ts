@@ -15,12 +15,26 @@ interface D1PreparedStatement {
 interface D1Database {
   prepare(query: string): D1PreparedStatement;
 }
+interface AiSearchResult {
+  data?: Array<{
+    content?: string | Array<{ text?: string }>;
+    text?: string;
+  }>;
+}
+interface AiSearchInstance {
+  search(input: {
+    query: string;
+    max_num_results?: number;
+    rewrite_query?: boolean;
+  }): Promise<AiSearchResult>;
+}
 interface WorkersAI {
   run(
     model: string,
     input: Record<string, unknown>,
     options?: Record<string, unknown>,
   ): Promise<{ response?: string }>;
+  autorag(instance: string): AiSearchInstance;
 }
 
 interface Env {
@@ -28,6 +42,7 @@ interface Env {
   AI?: WorkersAI;
   DB?: D1Database;
   AI_GATEWAY_ID?: string;
+  AI_SEARCH_INSTANCE?: string;
   ELEVENLABS_API_KEY?: string;
   ELEVENLABS_VOICE_ID?: string;
 }
@@ -106,25 +121,55 @@ function titleFor(type: SegmentType, listener: Listener): string {
   return name ? `Morning kickoff · ${name}` : SEGMENTS.intro.title;
 }
 
-/** Workers AI writes the DJ line from the listener profile (via AI Gateway if set). */
-async function generateScript(
+/** The AI Search query for a given segment. */
+function searchQuery(type: SegmentType, listener: Listener): string {
+  const location = listener.location?.trim() || "";
+  const topics = (listener.topics ?? []).join(", ");
+  if (type === "commute") {
+    return `latest traffic, transport and commute disruptions in ${location || "the city"}`;
+  }
+  if (type === "interview") {
+    return `recent positive news and personal updates about ${topics || "the listener"}`;
+  }
+  return `interesting current highlights about ${topics || "today"}`;
+}
+
+/**
+ * AI Search (formerly AutoRAG) retrieval — grounds the DJ in real content.
+ * Gated by AI_SEARCH_INSTANCE; returns "" (no grounding) when unset or on error.
+ */
+async function retrieveContext(env: Env, query: string): Promise<string> {
+  const instance = env.AI_SEARCH_INSTANCE?.trim();
+  if (!env.AI || !instance) return "";
+  try {
+    const res = await env.AI.autorag(instance).search({
+      query,
+      max_num_results: 5,
+      rewrite_query: true,
+    });
+    const texts = (res?.data ?? [])
+      .map((item) => {
+        if (typeof item.content === "string") return item.content;
+        if (Array.isArray(item.content)) {
+          return item.content.map((c) => c?.text ?? "").join(" ");
+        }
+        return item.text ?? "";
+      })
+      .filter(Boolean);
+    return texts.join("\n").slice(0, 1200);
+  } catch (error) {
+    console.warn("AI Search retrieval failed", error);
+    return "";
+  }
+}
+
+/** Runs the DJ persona LLM (via AI Gateway if configured). */
+async function runDj(
   env: Env,
-  type: SegmentType,
-  listener: Listener,
+  system: string,
+  user: string,
 ): Promise<string | null> {
   if (!env.AI) return null;
-
-  const name = listener.name?.trim() || "there";
-  const location = listener.location?.trim() || "your area";
-  const taste = listener.taste?.trim() || "feel-good";
-  const topics = (listener.topics ?? []).join(", ") || "general news";
-
-  const system =
-    "You are the live AI DJ for 1111.fm, a personal radio station. Write exactly what the DJ says OUT LOUD: warm, energetic, conversational. Two to three sentences, under 55 words. No emojis, no markdown, no stage directions, no surrounding quotation marks.";
-  const user =
-    `Listener: ${name}, in ${location}. Music taste: ${taste}. Interested in: ${topics}.\n` +
-    `Segment brief: ${SEGMENT_BRIEF[type]}`;
-
   try {
     const out = await env.AI.run(
       DJ_MODEL,
@@ -133,7 +178,7 @@ async function generateScript(
           { role: "system", content: system },
           { role: "user", content: user },
         ],
-        max_tokens: 180,
+        max_tokens: 200,
         temperature: 0.7,
       },
       env.AI_GATEWAY_ID ? { gateway: { id: env.AI_GATEWAY_ID } } : undefined,
@@ -141,16 +186,61 @@ async function generateScript(
     const text = out?.response?.toString().trim();
     return text ? text.replace(/^["']|["']$/g, "") : null;
   } catch (error) {
-    console.warn("Workers AI script generation failed", error);
+    console.warn("Workers AI generation failed", error);
     return null;
   }
+}
+
+const DJ_SYSTEM =
+  "You are the live AI DJ for 1111.fm, a personal radio station. Write exactly what the DJ says OUT LOUD: warm, energetic, conversational. Two to three sentences, under 55 words. No emojis, no markdown, no stage directions, no surrounding quotation marks.";
+
+/** Workers AI writes the DJ line from the listener profile, grounded by AI Search. */
+async function generateScript(
+  env: Env,
+  type: SegmentType,
+  listener: Listener,
+): Promise<string | null> {
+  const name = listener.name?.trim() || "there";
+  const location = listener.location?.trim() || "your area";
+  const taste = listener.taste?.trim() || "feel-good";
+  const topics = (listener.topics ?? []).join(", ") || "general news";
+
+  const context = await retrieveContext(env, searchQuery(type, listener));
+  const user =
+    `Listener: ${name}, in ${location}. Music taste: ${taste}. Interested in: ${topics}.\n` +
+    `Segment brief: ${SEGMENT_BRIEF[type]}` +
+    (context
+      ? `\n\nGrounding facts (use only what is relevant, do not invent beyond these):\n${context}`
+      : "");
+
+  return runDj(env, DJ_SYSTEM, user);
+}
+
+/** Answers a listener's free-form question in the DJ's voice, grounded by AI Search. */
+async function answerQuestion(
+  env: Env,
+  question: string,
+  listener: Listener,
+): Promise<string | null> {
+  const name = listener.name?.trim() || "there";
+  const location = listener.location?.trim() || "your area";
+  const topics = (listener.topics ?? []).join(", ") || "general topics";
+
+  const context = await retrieveContext(env, question);
+  const system =
+    "You are the live AI DJ for 1111.fm. A listener just asked you something on air. Answer warmly and concisely in a spoken style: two to four sentences, under 70 words. Use the grounding facts if relevant; if you don't know, say so briefly and keep it light. No emojis, no markdown, no surrounding quotation marks.";
+  const user =
+    `Listener ${name} in ${location} (follows ${topics}) asks on air: "${question}"` +
+    (context ? `\n\nGrounding facts:\n${context}` : "");
+
+  return runDj(env, system, user);
 }
 
 /** Best-effort append to the D1 play log. */
 async function logSegment(
   env: Env,
   listener: Listener,
-  type: SegmentType,
+  type: string,
   title: string,
   script: string,
 ): Promise<void> {
@@ -219,6 +309,52 @@ async function requestElevenLabsVoice(
   return response;
 }
 
+/** Voices a script with ElevenLabs; returns null when no key or on failure. */
+async function speak(
+  env: Env,
+  script: string,
+): Promise<{ stream: ReadableStream; voiceId: string } | null> {
+  const apiKey = env.ELEVENLABS_API_KEY;
+  if (!apiKey) return null;
+  const preferred = env.ELEVENLABS_VOICE_ID || FREE_PLAN_VOICE_ID;
+  try {
+    try {
+      const res = await requestElevenLabsVoice(preferred, script, apiKey);
+      return { stream: res.body as ReadableStream, voiceId: preferred };
+    } catch (error) {
+      if (preferred === FREE_PLAN_VOICE_ID) throw error;
+      console.warn(
+        "Preferred ElevenLabs voice unavailable; using free-plan voice",
+        error,
+      );
+      const res = await requestElevenLabsVoice(FREE_PLAN_VOICE_ID, script, apiKey);
+      return { stream: res.body as ReadableStream, voiceId: FREE_PLAN_VOICE_ID };
+    }
+  } catch (error) {
+    console.error("ElevenLabs speech generation failed", error);
+    return null;
+  }
+}
+
+function audioResponse(
+  stream: ReadableStream,
+  script: string,
+  title: string,
+  voiceId: string,
+): Response {
+  return new Response(stream, {
+    headers: {
+      "cache-control": "no-store",
+      "content-type": "audio/mpeg",
+      "x-content-type-options": "nosniff",
+      "x-dj-script": encodeURIComponent(script),
+      "x-dj-title": encodeURIComponent(title),
+      "x-elevenlabs-voice-id": voiceId,
+      "x-voice-provider": "elevenlabs",
+    },
+  });
+}
+
 async function generateSegment(request: Request, env: Env): Promise<Response> {
   let body: unknown;
   try {
@@ -261,51 +397,44 @@ async function generateSegment(request: Request, env: Env): Promise<Response> {
     return cachedSpeechResponse(type, script, title);
   }
 
-  const voiceId = env.ELEVENLABS_VOICE_ID || FREE_PLAN_VOICE_ID;
-
-  try {
-    let activeVoiceId = voiceId;
-    let ttsResponse: Response;
-
-    try {
-      ttsResponse = await requestElevenLabsVoice(
-        voiceId,
-        script,
-        env.ELEVENLABS_API_KEY as string,
-      );
-    } catch (error) {
-      if (voiceId === FREE_PLAN_VOICE_ID) throw error;
-      console.warn(
-        "Preferred ElevenLabs voice unavailable; using free-plan voice",
-        error,
-      );
-      activeVoiceId = FREE_PLAN_VOICE_ID;
-      ttsResponse = await requestElevenLabsVoice(
-        FREE_PLAN_VOICE_ID,
-        script,
-        env.ELEVENLABS_API_KEY as string,
-      );
-    }
-
-    return new Response(ttsResponse.body, {
-      headers: {
-        "cache-control": "no-store",
-        "content-type": "audio/mpeg",
-        "x-content-type-options": "nosniff",
-        "x-dj-script": encodeURIComponent(script),
-        "x-dj-title": encodeURIComponent(title),
-        "x-elevenlabs-voice-id": activeVoiceId,
-        "x-voice-provider": "elevenlabs",
-      },
-    });
-  } catch (error) {
-    console.error(
-      "ElevenLabs speech generation failed; using cached speech",
-      error,
-    );
-    // Fall back to the pre-recorded clip with its matching canned caption.
+  const spoken = await speak(env, script);
+  if (!spoken) {
+    // TTS failed — fall back to the pre-recorded clip with its matching caption
     return cachedSpeechResponse(type, SEGMENTS[type].script, SEGMENTS[type].title);
   }
+  return audioResponse(spoken.stream, script, title, spoken.voiceId);
+}
+
+async function askDj(request: Request, env: Env): Promise<Response> {
+  let body: { question?: unknown; listener?: unknown };
+  try {
+    body = (await request.json()) as { question?: unknown; listener?: unknown };
+  } catch {
+    return jsonError("Send a JSON body with a question.", 400);
+  }
+
+  const question =
+    typeof body.question === "string" ? body.question.trim() : "";
+  if (!question) return jsonError("Ask a question.", 400);
+
+  const listener: Listener =
+    typeof body.listener === "object" && body.listener !== null
+      ? (body.listener as Listener)
+      : {};
+
+  const script =
+    (await answerQuestion(env, question, listener)) ??
+    "Great question! I don't have that one cued up right now, but stay tuned and I'll dig into it between tracks.";
+  const title = "You asked the DJ";
+
+  await logSegment(env, listener, "ask", title, script);
+
+  const spoken = await speak(env, script);
+  if (!spoken) {
+    // no voice available — return the answer as text for the UI to show
+    return Response.json({ title, script }, { headers: { "cache-control": "no-store" } });
+  }
+  return audioResponse(spoken.stream, script, title, spoken.voiceId);
 }
 
 async function putProfile(request: Request, env: Env): Promise<Response> {
@@ -440,6 +569,16 @@ export default {
         });
       }
       return generateSegment(request, env);
+    }
+
+    if (url.pathname === "/api/ask") {
+      if (request.method !== "POST") {
+        return new Response("Method Not Allowed", {
+          status: 405,
+          headers: { allow: "POST" },
+        });
+      }
+      return askDj(request, env);
     }
 
     return env.ASSETS.fetch(request);
