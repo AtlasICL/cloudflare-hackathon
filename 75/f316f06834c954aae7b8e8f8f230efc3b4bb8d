@@ -1,0 +1,25 @@
+backend/worker.ts
+  s_122f36bba0b054::t_09ac97bada972f 96,138,166-167,175,194-195,197,216,219,231,236,427-428
+frontend/src/components/AskBar.tsx
+  s_122f36bba0b054::t_3cfe2618ead8b1 33,53-54,65
+frontend/src/components/Settings.tsx
+  s_122f36bba0b054::t_5beab360082158 34
+frontend/src/useRadio.ts
+  s_122f36bba0b054::t_f85f2931042c7b 98,184,190,204,213,217,281-282,288,307,320,324,333,340
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "75f316f06834c954aae7b8e8f8f230efc3b4bb8d",
+  "prompts": {},
+  "sessions": {
+    "s_122f36bba0b054": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9a818079-1a6b-4f48-a790-f27953ddc240",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sina Dilek <fatih@cloudflare.com>"
+    }
+  }
+}
