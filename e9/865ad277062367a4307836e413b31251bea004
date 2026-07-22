@@ -1,0 +1,19 @@
+frontend/index.html
+  s_96f9327fd1afbc::t_e6ba04d2daeac9 1-266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e9865ad277062367a4307836e413b31251bea004",
+  "prompts": {},
+  "sessions": {
+    "s_96f9327fd1afbc": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_07535c516ffeNBnxe9GH0ZC8La",
+        "model": "@cf/zai-org/glm-5.2"
+      },
+      "human_author": "Sina Dilek <fatih@cloudflare.com>"
+    }
+  }
+}
