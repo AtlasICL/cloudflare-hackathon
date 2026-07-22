@@ -1,0 +1,29 @@
+backend/worker.ts
+  s_122f36bba0b054::t_33b9e2ee79d937 18-30,37,45,124-167,169-170,181,189,194-238,243,312-357,400-406,408-409,411-414,416-418,420-435,437,574-583
+frontend/src/App.tsx
+  s_122f36bba0b054::t_43ebdec165089a 7,27
+frontend/src/components/AskBar.module.css
+  s_122f36bba0b054::t_bf187cc71b5510 1-74
+frontend/src/components/AskBar.tsx
+  s_122f36bba0b054::t_231856c733b6e7 1-68
+frontend/src/useRadio.ts
+  s_122f36bba0b054::t_cce856001db2ab 276-336,375
+wrangler.jsonc
+  s_122f36bba0b054::t_bc136ec3f6f81d 10-13,19-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0762aa749b80f2eca4f8a4c97ca5ee5eb29bc08c",
+  "prompts": {},
+  "sessions": {
+    "s_122f36bba0b054": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9a818079-1a6b-4f48-a790-f27953ddc240",
+        "model": "unknown"
+      },
+      "human_author": "Sina Dilek <fatih@cloudflare.com>"
+    }
+  }
+}
