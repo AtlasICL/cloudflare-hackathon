@@ -5,12 +5,16 @@ const KEY = '1111fm.settings'
 
 export function useSettings() {
   const [settings, setSettings] = useState<Settings>(() => {
+    let loaded: Settings = DEFAULT_SETTINGS
     try {
       const raw = localStorage.getItem(KEY)
-      return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : DEFAULT_SETTINGS
+      if (raw) loaded = { ...DEFAULT_SETTINGS, ...JSON.parse(raw) }
     } catch {
-      return DEFAULT_SETTINGS
+      /* ignore */
     }
+    // mint a stable listener id on first run (used as the D1 primary key)
+    if (!loaded.id) loaded = { ...loaded, id: crypto.randomUUID() }
+    return loaded
   })
 
   useEffect(() => {

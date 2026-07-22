@@ -1,4 +1,5 @@
 export type Settings = {
+  id: string // stable per-listener id (used as the D1 key)
   name: string
   location: string
   topics: string[] // topic ids
@@ -25,6 +26,7 @@ export const TASTE_OPTIONS = [
 ] as const
 
 export const DEFAULT_SETTINGS: Settings = {
+  id: '',
   name: '',
   location: 'Berlin',
   topics: ['f1', 'world', 'traffic'],

@@ -12,7 +12,7 @@ import styles from './App.module.css'
 export default function App() {
   const [settings, setSettings] = useSettings()
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const radio = useRadio()
+  const radio = useRadio(settings)
 
   return (
     <div className={styles.stage}>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { Settings } from './settings'
 
 type SegmentType = 'intro' | 'commute' | 'interview'
 type Segment = { script: string; title: string; audio: Blob }
@@ -21,7 +22,12 @@ const SONG_DISPLAY: RadioDisplay = {
   metaSub: 'Roy Ayers Ubiquity',
 }
 
-export function useRadio() {
+export function useRadio(settings: Settings) {
+  // keep the latest listener profile available to segment requests without
+  // re-running the whole engine when settings change
+  const settingsRef = useRef(settings)
+  settingsRef.current = settings
+
   const [music] = useState(() => new Audio('/api/song'))
   const [voice] = useState(() => new Audio())
   const [playing, setPlaying] = useState(false)
@@ -85,10 +91,22 @@ export function useRadio() {
   function getSegment(type: SegmentType) {
     const cached = segments.current.get(type)
     if (cached) return cached
+    const s = settingsRef.current
     const request = fetch('/api/generate-segment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type }),
+      // listener profile lets the Worker personalize the DJ script;
+      // the backend currently ignores unknown fields, so this is non-breaking
+      body: JSON.stringify({
+        type,
+        listener: {
+          id: s.id,
+          name: s.name,
+          location: s.location,
+          topics: s.topics,
+          taste: s.taste,
+        },
+      }),
     }).then(async (response) => {
       if (!response.ok) throw new Error('The AI host is unavailable.')
       return {
@@ -157,8 +175,9 @@ export function useRadio() {
     const requestId = ++generation.current
     phase.current = 'intro'
     setPlayback(true)
+    const name = settingsRef.current.name.trim()
     setDisplay({
-      kicker: 'Your AI host',
+      kicker: name ? `Good morning, ${name}` : 'Your AI host',
       title: '1111.fm Morning Show',
       sub: 'Warming up the microphone',
       metaTitle: '1111.fm Live',
@@ -276,6 +295,21 @@ export function useRadio() {
       releaseVoice()
     }
   }, [music, voice])
+
+  // persist the listener profile to D1 whenever settings change (best-effort)
+  useEffect(() => {
+    void fetch('/api/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: settings.id,
+        name: settings.name,
+        location: settings.location,
+        topics: settings.topics,
+        taste: settings.taste,
+      }),
+    }).catch(() => {})
+  }, [settings])
 
   return { display, next, playing, previous, toast, toggle }
 }

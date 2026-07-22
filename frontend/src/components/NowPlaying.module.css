@@ -13,6 +13,7 @@
   letter-spacing: 3px;
   text-transform: uppercase;
   opacity: 0.8;
+  animation: rise 0.5s ease both;
 }
 
 .title {
@@ -20,10 +21,17 @@
   font-weight: 700;
   margin-top: 8px;
   text-shadow: 0 4px 18px rgba(120, 40, 0, 0.4);
+  animation: rise 0.5s ease 0.04s both;
 }
 
 .sub {
   font-size: 14px;
   opacity: 0.85;
   margin-top: 6px;
+  animation: rise 0.5s ease 0.08s both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
 }
