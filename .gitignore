@@ -3,6 +3,8 @@ dist/
 .DS_Store
 .wrangler/
 *.local
+.dev.vars
+.env
 
 # standalone HTML mocks, superseded by the Vite app in frontend/
 /index.html

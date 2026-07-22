@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cloudwave-1111-fm",
+  "main": "backend/worker.ts",
+  "compatibility_date": "2026-07-22",
+  "vars": {
+    "ELEVENLABS_VOICE_ID": "fq1SdXsX6OokE10pJ4Xw"
+  },
+  "rules": [
+    {
+      "type": "Data",
+      "globs": ["**/*.mp3"],
+      "fallthrough": true
+    },
+    {
+      "type": "Text",
+      "globs": ["**/*.html"],
+      "fallthrough": true
+    }
+  ]
+}

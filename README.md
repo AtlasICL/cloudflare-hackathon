@@ -8,3 +8,18 @@ Cloudflare 2026 summer hackathon submission.
 | Othman Achki  |
 | Sina Dilek    |
 | Anna Rachkova |
+
+### Development
+
+Set `ELEVENLABS_API_KEY` in `.dev.vars`, then run:
+
+```sh
+npx wrangler dev
+```
+
+Add the production secret before deploying:
+
+```sh
+npx wrangler secret put ELEVENLABS_API_KEY
+npx wrangler deploy
+```
