@@ -1,0 +1,29 @@
+.center {
+  position: fixed;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  top: 14%;
+  text-align: center;
+  pointer-events: none;
+}
+
+.kicker {
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.title {
+  font-size: 30px;
+  font-weight: 700;
+  margin-top: 8px;
+  text-shadow: 0 4px 18px rgba(120, 40, 0, 0.4);
+}
+
+.sub {
+  font-size: 14px;
+  opacity: 0.85;
+  margin-top: 6px;
+}

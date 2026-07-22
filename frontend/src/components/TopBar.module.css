@@ -1,0 +1,106 @@
+.top {
+  position: fixed;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 30px;
+}
+
+/* liquid-glass pill — fully rounded so the logo circle sits concentric */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  text-align: left;
+  color: #fff;
+  padding: 8px 20px 8px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.55),
+    0 12px 34px rgba(90, 30, 0, 0.28);
+  transition: background 0.18s ease, transform 0.12s ease;
+}
+.brand:hover { background: rgba(255, 255, 255, 0.24); }
+.brand:hover .gear { opacity: 1; transform: rotate(40deg); }
+.brand:active { transform: scale(0.99); }
+
+.dot {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #ffffff, #fff2e2);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -3px 6px rgba(214, 95, 0, 0.15),
+    0 6px 16px rgba(120, 40, 0, 0.3);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: var(--orange-deep);
+  font-size: 13px;
+  letter-spacing: -0.5px;
+  flex: none;
+}
+
+.text { display: flex; flex-direction: column; line-height: 1.15; }
+.name { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
+.sub {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.82;
+  margin-top: 2px;
+  letter-spacing: 0.2px;
+}
+
+/* circular glass sub-badge for the gear */
+.gear {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  opacity: 0.85;
+  transition: transform 0.3s ease, opacity 0.15s ease, background 0.15s ease;
+}
+.gear svg { width: 17px; height: 17px; }
+
+/* ON AIR badge — same glass language */
+.live {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+  animation: blink 1.4s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}

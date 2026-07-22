@@ -1,0 +1,22 @@
+:root {
+  --orange: #f6821f;
+  --orange-deep: #d95f00;
+  --orange-hot: #ffae42;
+  color-scheme: dark;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+  color: #fff;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(120% 90% at 50% -10%,
+      #ffc46b 0%, var(--orange-hot) 22%, var(--orange) 48%, var(--orange-deep) 82%, #b34e00 100%);
+}
+
+button { font-family: inherit; }

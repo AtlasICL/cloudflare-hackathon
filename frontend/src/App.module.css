@@ -1,0 +1,29 @@
+.stage {
+  position: fixed;
+  inset: 0;
+}
+
+/* soft moving glow behind the wave */
+.glow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(48% 40% at 50% 52%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 70%);
+  mix-blend-mode: soft-light;
+  animation: breathe 7s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+/* darkened edges for depth */
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: inset 0 0 220px rgba(90, 30, 0, 0.5), inset 0 0 60px rgba(120, 40, 0, 0.25);
+}
