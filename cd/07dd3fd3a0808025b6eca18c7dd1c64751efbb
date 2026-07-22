@@ -1,0 +1,29 @@
+frontend/src/App.tsx
+  s_122f36bba0b054::t_34741ab9062e9d 15
+frontend/src/components/AgentToast.module.css
+  s_122f36bba0b054::t_3b9604992bd37e 10-11,16-18
+frontend/src/components/NowPlaying.module.css
+  s_122f36bba0b054::t_f735d203321245 16,24,31-36
+frontend/src/components/NowPlaying.tsx
+  s_122f36bba0b054::t_03b5c6c7c96167 5,8-10
+migrations/0001_init.sql
+  s_122f36bba0b054::t_dcf3ae57f86a5c 1-21
+wrangler.jsonc
+  s_122f36bba0b054::t_e71c6bfee3cb6d 7-10,12-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "cd07dd3fd3a0808025b6eca18c7dd1c64751efbb",
+  "prompts": {},
+  "sessions": {
+    "s_122f36bba0b054": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9a818079-1a6b-4f48-a790-f27953ddc240",
+        "model": "unknown"
+      },
+      "human_author": "Sina Dilek <fatih@cloudflare.com>"
+    }
+  }
+}
