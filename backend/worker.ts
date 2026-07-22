@@ -4,6 +4,7 @@ import COMMUTE_AUDIO from "./audio/commute.mp3";
 import INTERVIEW_AUDIO from "./audio/interview.mp3";
 // @ts-expect-error Wrangler bundles MP3 imports as data modules.
 import INTRO_AUDIO from "./audio/intro.mp3";
+import { WorkflowEntrypoint } from "cloudflare:workers";
 
 // --- minimal binding types (avoids pulling in @cloudflare/workers-types) ---
 interface D1PreparedStatement {
@@ -45,6 +46,11 @@ interface Env {
   AI_SEARCH_INSTANCE?: string;
   ELEVENLABS_API_KEY?: string;
   ELEVENLABS_VOICE_ID?: string;
+  SEGMENT_WORKFLOW?: { create(options?: { id?: string; params?: unknown }): Promise<unknown> };
+  SESSION?: {
+    idFromName(name: string): unknown;
+    get(id: unknown): { fetch(input: string): Promise<Response> };
+  };
 }
 
 interface Listener {
@@ -542,11 +548,71 @@ async function getSongPreview(): Promise<Response> {
   }
 }
 
+// Durable Object: one per station, tracks how many times the song has spun.
+export class SessionListener {
+  private storage: { get<T>(k: string): Promise<T | undefined>; put(k: string, v: unknown): Promise<void> };
+  constructor(state: { storage: SessionListener["storage"] }) {
+    this.storage = state.storage;
+  }
+  async fetch(_request: Request): Promise<Response> {
+    const plays = ((await this.storage.get<number>("plays")) ?? 0) + 1;
+    await this.storage.put("plays", plays);
+    return Response.json({ plays });
+  }
+}
+
+// Workflow: durable, retryable segment pipeline (generate script -> log).
+export class SegmentWorkflow extends WorkflowEntrypoint<Env> {
+  async run(
+    event: { payload?: { type?: SegmentType; listener?: Listener } },
+    step: { do<T>(name: string, cb: () => Promise<T>): Promise<T> },
+  ) {
+    const type = (event.payload?.type ?? "commute") as SegmentType;
+    const listener = event.payload?.listener ?? {};
+    const script = await step.do(
+      "generate script",
+      async () => (await generateScript(this.env, type, listener)) ?? SEGMENTS[type].script,
+    );
+    await step.do("log segment", async () => {
+      await logSegment(this.env, listener, type, titleFor(type, listener), script);
+    });
+    return { type, script };
+  }
+}
+
+async function bumpSession(env: Env, request: Request): Promise<void> {
+  if (!env.SESSION) return;
+  try {
+    const stub = env.SESSION.get(env.SESSION.idFromName("global"));
+    await stub.fetch("https://session/bump");
+  } catch (error) {
+    console.warn("session bump failed", error);
+  }
+}
+
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  // Cron Trigger: pre-warm the next segment via the durable Workflow.
+  async scheduled(
+    _event: unknown,
+    env: Env,
+    ctx: { waitUntil(p: Promise<unknown>): void },
+  ): Promise<void> {
+    if (env.SEGMENT_WORKFLOW) {
+      ctx.waitUntil(
+        env.SEGMENT_WORKFLOW.create({ params: { type: "commute", listener: {} } }).then(() => {}),
+      );
+    }
+  },
+
+  async fetch(
+    request: Request,
+    env: Env,
+    ctx: { waitUntil(p: Promise<unknown>): void },
+  ): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/song" && request.method === "GET") {
+      ctx.waitUntil(bumpSession(env, request));
       return getSongPreview();
     }
 

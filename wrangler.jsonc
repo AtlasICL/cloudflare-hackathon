@@ -16,6 +16,17 @@
   "ai": {
     "binding": "AI"
   },
+  // Cron Triggers: pre-warm a segment on a schedule (created on deploy).
+  "triggers": { "crons": ["*/10 * * * *"] },
+  // Workflows: durable segment pipeline (created on deploy, no pre-provisioning).
+  "workflows": [
+    { "name": "segment-workflow", "binding": "SEGMENT_WORKFLOW", "class_name": "SegmentWorkflow" }
+  ],
+  // Durable Objects: per-station session state (created on deploy).
+  "durable_objects": {
+    "bindings": [{ "name": "SESSION", "class_name": "SessionListener" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["SessionListener"] }],
   // D1 — UNCOMMENT after provisioning (a placeholder id breaks `wrangler dev`):
   //   1. npx wrangler d1 create cloudwave   -> paste the printed database_id below
   //   2. npx wrangler d1 migrations apply cloudwave --local   (and --remote to deploy)
