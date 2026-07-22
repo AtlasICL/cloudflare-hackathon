@@ -1,0 +1,21 @@
+backend/worker.ts
+  s_122f36bba0b054::t_e13a0ba3d5dcee 7,49-53,551-592,594-611,615
+wrangler.jsonc
+  s_122f36bba0b054::t_1367d744afce1a 19-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "02242c358e21b38b743d6bf2ce51b7f00131aaf3",
+  "prompts": {},
+  "sessions": {
+    "s_122f36bba0b054": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9a818079-1a6b-4f48-a790-f27953ddc240",
+        "model": "unknown"
+      },
+      "human_author": "Sina Dilek <fatih@cloudflare.com>"
+    }
+  }
+}
