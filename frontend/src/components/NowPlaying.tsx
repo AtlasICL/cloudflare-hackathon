@@ -1,16 +1,12 @@
-import { tasteLabel, type Settings } from '../settings'
+import type { RadioDisplay } from '../useRadio'
 import styles from './NowPlaying.module.css'
 
-export default function NowPlaying({ settings }: { settings: Settings }) {
-  const taste = tasteLabel(settings.taste)
-  const kicker = settings.name ? `Streaming for ${settings.name}` : 'Now streaming'
-  const sub = settings.location ? `Curated for ${settings.location}` : 'Curated for your day'
-
+export default function NowPlaying({ display }: { display: RadioDisplay }) {
   return (
     <div className={styles.center}>
-      <div className={styles.kicker}>{kicker}</div>
-      <div className={styles.title}>{taste} — tuned to you</div>
-      <div className={styles.sub}>{sub}</div>
+      <div className={styles.kicker}>{display.kicker}</div>
+      <div className={styles.title}>{display.title}</div>
+      <div className={styles.sub}>{display.sub}</div>
     </div>
   )
 }

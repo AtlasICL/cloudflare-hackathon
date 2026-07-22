@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "dev": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy"
+  },
   "devDependencies": {
     "wrangler": "^4.113.0"
   },

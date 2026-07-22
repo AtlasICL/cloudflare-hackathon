@@ -14,12 +14,12 @@ Cloudflare 2026 summer hackathon submission.
 Set `ELEVENLABS_API_KEY` in `.dev.vars`, then run:
 
 ```sh
-npx wrangler dev
+npm run dev
 ```
 
 Add the production secret before deploying:
 
 ```sh
 npx wrangler secret put ELEVENLABS_API_KEY
-npx wrangler deploy
+npm run deploy
 ```

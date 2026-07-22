@@ -6,23 +6,30 @@ import AgentToast from './components/AgentToast'
 import Player from './components/Player'
 import SettingsPanel from './components/Settings'
 import { useSettings } from './useSettings'
+import { useRadio } from './useRadio'
 import styles from './App.module.css'
 
 export default function App() {
-  const [playing, setPlaying] = useState(true)
   const [settings, setSettings] = useSettings()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const radio = useRadio()
 
   return (
     <div className={styles.stage}>
       <div className={styles.glow} />
-      <WaveVisualizer playing={playing} />
+      <WaveVisualizer playing={radio.playing} />
       <div className={styles.vignette} />
 
       <TopBar onOpenSettings={() => setSettingsOpen(true)} />
-      <NowPlaying settings={settings} />
-      <AgentToast settings={settings} />
-      <Player playing={playing} onToggle={() => setPlaying((p) => !p)} />
+      <NowPlaying display={radio.display} />
+      <AgentToast update={radio.toast} />
+      <Player
+        display={radio.display}
+        playing={radio.playing}
+        onNext={() => void radio.next()}
+        onPrevious={() => void radio.previous()}
+        onToggle={() => void radio.toggle()}
+      />
 
       {settingsOpen && (
         <SettingsPanel

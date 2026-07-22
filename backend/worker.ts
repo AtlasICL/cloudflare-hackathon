@@ -1,5 +1,3 @@
-// @ts-expect-error Wrangler bundles HTML imports as text modules.
-import HOME_PAGE from "../frontend/index.html";
 // @ts-expect-error Wrangler bundles MP3 imports as data modules.
 import COMMUTE_AUDIO from "./audio/commute.mp3";
 // @ts-expect-error Wrangler bundles MP3 imports as data modules.
@@ -8,6 +6,7 @@ import INTERVIEW_AUDIO from "./audio/interview.mp3";
 import INTRO_AUDIO from "./audio/intro.mp3";
 
 interface Env {
+  ASSETS: { fetch(request: Request): Promise<Response> };
   ELEVENLABS_API_KEY?: string;
   ELEVENLABS_VOICE_ID?: string;
 }
@@ -43,14 +42,6 @@ const CACHED_AUDIO: Record<SegmentType, ArrayBuffer> = {
   commute: COMMUTE_AUDIO,
   interview: INTERVIEW_AUDIO,
   intro: INTRO_AUDIO,
-};
-
-const pageHeaders = {
-  "cache-control": "no-store",
-  "content-security-policy":
-    "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; media-src 'self' blob: https://*.itunes.apple.com; connect-src 'self'; img-src data:",
-  "content-type": "text/html; charset=utf-8",
-  "x-content-type-options": "nosniff",
 };
 
 function jsonError(message: string, status: number): Response {
@@ -238,10 +229,6 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
-    if (url.pathname === "/" && request.method === "GET") {
-      return new Response(HOME_PAGE, { headers: pageHeaders });
-    }
-
     if (url.pathname === "/api/song" && request.method === "GET") {
       return getSongPreview();
     }
@@ -257,6 +244,6 @@ export default {
       return generateSegment(request, env);
     }
 
-    return new Response("Not Found", { status: 404 });
+    return env.ASSETS.fetch(request);
   },
 };

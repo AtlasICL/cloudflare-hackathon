@@ -6,15 +6,15 @@
   "vars": {
     "ELEVENLABS_VOICE_ID": "fq1SdXsX6OokE10pJ4Xw"
   },
+  "assets": {
+    "directory": "./frontend/dist",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
   "rules": [
     {
       "type": "Data",
       "globs": ["**/*.mp3"],
-      "fallthrough": true
-    },
-    {
-      "type": "Text",
-      "globs": ["**/*.html"],
       "fallthrough": true
     }
   ]
